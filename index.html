@@ -116,7 +116,7 @@
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function() {
             var gData
-            var URL = "1n7_ArjnD0w6iEPneVlQGT1m-eyZkL7ibzxj1i1rjx5I"
+            var URL = "1JJKtPl39OgcSPkj_CL5jHgY2SUt4Q6wMEwHNTY0hLgQ"
                 Tabletop.init({ key: URL, callback: showInfo, simpleSheet: true })
         })
 
@@ -133,13 +133,13 @@
 
             // create geoJSON with coordinates and other
             // useful bits from the original data
-            var optionsJSON = ["name", "address", "city", "rowNumber"]
+            var optionsJSON = ["PROJECT_SITE", "SUB_PROJECT_SITE", "ADDRESS", "UNIT_TYPE"]
             var geoJSON = Sheetsee.createGeoJSON(gData, optionsJSON)
 
             // create map, tilelayer (map background), markers and popups
             var map = Sheetsee.loadMap("map")
             Sheetsee.addTileLayer(map, 'jllord.n7aml2bc')
-            var markerLayer = Sheetsee.addMarkerLayer(geoJSON, map, "<h2>{{ name }}</h2>", true)
+            var markerLayer = Sheetsee.addMarkerLayer(geoJSON, map, "<h2>{{ PROJECT_SITE }}</h2>", true)
 
             // find the latest spot with the most important
             // info filled in (to prevent map breaking if
@@ -152,50 +152,7 @@
             $('#latestSpot').html(latestSpot)
             map.setView([theLatestSpot.lat, theLatestSpot.long], 14)
 
-            // when someone clicks on a row, highlight it and
-            // re-center the map
-            // TODO show popup, change marker color
-            $('.spotRow').live("click", function(event) {
-                $('.spotRow').removeClass("selectedRow")
-                var rowNumber = $(this).closest("tr").attr("id")
-                $('#' + rowNumber).addClass("selectedRow")
-                var dataElement = Sheetsee.getMatches(gData, rowNumber, "rowNumber")
-                var selectedSpot = Sheetsee.ich.selectedSpot({
-                    rows: dataElement
-                })
-                $('#latestSpot').css("display", "none")
-                $('#selectedSpot').html(selectedSpot).css("display", "inline")
-                var selectedCoords = [dataElement[0].lat, dataElement[0].long]
-                map.setView(selectedCoords, 14)
-            })
 
-            // so that the first map and info that loads
-            // is complete and doesn't show rows that are
-            // actively being edited by folk
-            function findLatestCompleteSpot(data) {
-                var latestCompleteSpot = []
-                var startWithLatestRow = data.reverse()
-                startWithLatestRow.forEach(function(row){
-                    if (!row.lat || !row.long || !row.name || !row.address || !row.city || !row.state ) return
-                    else latestCompleteSpot.push(row)
-                })
-                return latestCompleteSpot[0]
-            }
-
-            // Add click listener to the markerLayer
-            markerLayer.on('click', function(e) {
-                // clear any selected rows
-                $('.spotRow').removeClass("selectedRow")
-                // get row number of selected marker
-                var rowNumber = e.layer.feature.opts.rowNumber
-                // find that row in the table and make consider it selected
-                $('#' + rowNumber).addClass("selectedRow")
-                // using row number, get the data for the selected spot
-                var dataElement = Sheetsee.getMatches(gData, rowNumber.toString(), "rowNumber")
-                // take those details and re-write the selected spot section
-                var selectedSpot = Sheetsee.ich.selectedSpot({
-                    rows: dataElement
-                })
                 // center the map on the selected element
                 map.panTo([dataElement[0].lat, dataElement[0].long])
                 // update the spot listing
